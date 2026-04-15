@@ -1,0 +1,80 @@
+name: Gemini Live Smoke
+
+on:
+  workflow_dispatch:
+
+jobs:
+  live-gemini-smoke:
+    if: ${{ secrets.GEMINI_API_KEY != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build backend bundle
+        run: npm run build --workspace backend
+
+      - name: Start backend in Gemini mode
+        env:
+          PORT: 8080
+          NODE_ENV: production
+          MOCK_AI: "false"
+          STORAGE_PROVIDER: local
+          DEFAULT_MODEL: gemini-2.5-flash-lite
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          node backend/dist/server.js > /tmp/scamshield-live.log 2>&1 &
+          echo $! > /tmp/scamshield-live.pid
+
+      - name: Wait for health endpoint
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8080/api/health >/tmp/gemini-health.json; then
+              cat /tmp/gemini-health.json
+              grep -q '"providerMode":"gemini"' /tmp/gemini-health.json
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Backend failed to become healthy."
+          cat /tmp/scamshield-live.log || true
+          exit 1
+
+      - name: Live Gemini analysis smoke test
+        run: |
+          for attempt in $(seq 1 5); do
+            status=$(curl -s -o /tmp/gemini-analyze.json -w "%{http_code}" \
+              -X POST http://127.0.0.1:8080/api/analyze \
+              -H 'Content-Type: application/json' \
+              -d '{"content":"POS MALAYSIA parcel held by Kastam. Pay RM2.99 immediately to release package: http://postmy-track.cc/claim"}')
+            cat /tmp/gemini-analyze.json
+            echo
+            echo "HTTP status: ${status}"
+
+            if [ "${status}" = "200" ] && grep -q '"ok":true' /tmp/gemini-analyze.json; then
+              exit 0
+            fi
+
+            sleep 8
+          done
+
+          echo "Live Gemini smoke test failed after retries."
+          cat /tmp/scamshield-live.log || true
+          exit 1
+
+      - name: Stop backend
+        if: always()
+        run: |
+          cat /tmp/scamshield-live.log || true
+          if [ -f /tmp/scamshield-live.pid ]; then
+            kill "$(cat /tmp/scamshield-live.pid)" || true
+          fi
+

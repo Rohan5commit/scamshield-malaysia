@@ -68,3 +68,9 @@ Scale and roadmap:
 - telcos
 - public agencies
 - scam intelligence platform expansion
+
+## Speaker Notes
+
+- Keep the first minute product-centric, not architecture-heavy
+- Emphasize that the app works in mock mode now and has live Gemini wiring already
+- Use the community intelligence slide to shift from "single detector" to "scalable trust layer"

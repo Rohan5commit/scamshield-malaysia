@@ -101,6 +101,7 @@ scamshield-malaysia/
     architecture.md
     demo-script.md
     slides-outline.md
+    submission-copy.md
   scripts/
     dev.js
     seed-data.js
@@ -238,6 +239,15 @@ Runs entirely on GitHub Actions hosted runners and performs:
 - `/api/health` smoke check
 - `/api/analyze` smoke check
 
+### `gemini-live-smoke.yml`
+
+Manual GitHub Actions workflow that:
+
+- uses the repository secret `GEMINI_API_KEY`
+- starts the backend in live Gemini mode
+- confirms `/api/health` reports `providerMode: gemini`
+- runs a real analysis smoke test with retries
+
 ### `cloudrun-deploy-template.yml`
 
 A manual `workflow_dispatch` template that becomes active once GitHub secrets are added for:
@@ -273,6 +283,13 @@ AI coding tools were used during development. All code has been reviewed and can
 5. Show the community intelligence feed and search an existing scam pattern.
 6. Use the latest analysis to prefill a sanitized community report and submit it.
 7. Close with architecture, privacy controls, Docker support, CI, and Cloud Run readiness.
+
+## Submission Assets
+
+- [Architecture](docs/architecture.md)
+- [Demo Script](docs/demo-script.md)
+- [Slides Outline](docs/slides-outline.md)
+- [Submission Copy](docs/submission-copy.md)
 
 ## Real-World Positioning
 
