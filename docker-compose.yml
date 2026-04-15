@@ -1,0 +1,22 @@
+services:
+  scamshield-malaysia:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: scamshield-malaysia:local
+    ports:
+      - "8080:8080"
+    environment:
+      PORT: 8080
+      NODE_ENV: production
+      CLIENT_ORIGIN: http://localhost:8080
+      MOCK_AI: ${MOCK_AI:-true}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      DEFAULT_MODEL: ${DEFAULT_MODEL:-gemini-2.5-flash}
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER:-local}
+      FIRESTORE_PROJECT_ID: ${FIRESTORE_PROJECT_ID:-}
+      FIRESTORE_COLLECTION: ${FIRESTORE_COLLECTION:-scamshield_reports}
+      FIRESTORE_KEY_JSON: ${FIRESTORE_KEY_JSON:-}
+    volumes:
+      - ./backend/data:/app/backend/data
+

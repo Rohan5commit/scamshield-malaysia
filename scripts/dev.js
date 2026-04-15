@@ -5,12 +5,16 @@ const commands = [
   ['npm', ['run', 'dev:frontend']]
 ];
 
+const children = [];
+
 for (const [command, args] of commands) {
   const child = spawn(command, args, {
     cwd: process.cwd(),
     stdio: 'inherit',
     shell: true
   });
+
+  children.push(child);
 
   child.on('exit', (code) => {
     if (code && code !== 0) {
@@ -19,3 +23,13 @@ for (const [command, args] of commands) {
   });
 }
 
+function shutdown() {
+  for (const child of children) {
+    if (!child.killed) {
+      child.kill('SIGTERM');
+    }
+  }
+}
+
+process.on('SIGINT', shutdown);
+process.on('SIGTERM', shutdown);

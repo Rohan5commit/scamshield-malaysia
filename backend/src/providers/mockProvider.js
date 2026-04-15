@@ -7,6 +7,10 @@ function categoryFromContext({ normalizedInput, retrieval }) {
     return retrieval.seed[0].category;
   }
 
+  if (retrieval.community[0]?.score >= 0.14) {
+    return retrieval.community[0].category;
+  }
+
   if (normalizedInput.url) {
     return 'phishing-link';
   }
@@ -22,10 +26,20 @@ function categoryFromContext({ normalizedInput, retrieval }) {
   return 'social-engineering';
 }
 
-function modelRiskFromInputs({ heuristics, retrieval }) {
+function modelRiskFromInputs({ normalizedInput, heuristics, retrieval }) {
   const retrievalScore = Math.round((retrieval.seed[0]?.score ?? 0) * 100);
   const communityScore = Math.round((retrieval.community[0]?.score ?? 0) * 100);
-  return Math.max(15, Math.min(98, Math.round(heuristics.score * 0.58 + retrievalScore * 0.28 + communityScore * 0.14)));
+  let score = Math.round(heuristics.score * 0.52 + retrievalScore * 0.24 + communityScore * 0.24);
+
+  if (normalizedInput.detectedKind === 'image' && communityScore >= 14) {
+    score = Math.max(score, 58);
+  }
+
+  if (normalizedInput.normalizedText.toLowerCase().includes('wallet') && normalizedInput.normalizedText.toLowerCase().includes('verify')) {
+    score += 8;
+  }
+
+  return Math.max(15, Math.min(98, score));
 }
 
 function verdictFromRisk(score) {
@@ -71,7 +85,7 @@ function recommendedActions({ normalizedInput, retrieval }) {
 
 export class MockProvider {
   async analyzeThreat({ normalizedInput, heuristics, retrieval }) {
-    const modelRisk = modelRiskFromInputs({ heuristics, retrieval });
+    const modelRisk = modelRiskFromInputs({ normalizedInput, heuristics, retrieval });
     const category = categoryFromContext({ normalizedInput, retrieval });
     const topMatch = retrieval.seed[0];
     const verdict = verdictFromRisk(modelRisk);
@@ -117,4 +131,3 @@ export class MockProvider {
     });
   }
 }
-

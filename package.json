@@ -16,12 +16,8 @@
     "build": "npm run build --workspace frontend && npm run build --workspace backend",
     "seed": "node scripts/seed-data.js"
   },
-  "devDependencies": {
-    "concurrently": "^9.1.2"
-  },
   "engines": {
     "node": ">=22.0.0",
     "npm": ">=10.0.0"
   }
 }
-

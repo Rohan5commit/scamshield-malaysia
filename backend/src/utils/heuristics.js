@@ -1,9 +1,9 @@
 import { normalizePhoneNumber, looksLikePhoneNumber } from './phone.js';
 import { looksLikeUrl, normalizeUrl } from './url.js';
 
-const URGENCY_TERMS = ['urgent', 'immediately', 'within 24 hours', 'suspended', 'final notice', 'segera', 'gantung', 'last chance'];
+const URGENCY_TERMS = ['urgent', 'immediately', 'within 24 hours', 'suspended', 'final notice', 'verify now', 'segera', 'gantung', 'last chance'];
 const AUTHORITY_TERMS = ['bank negara', 'pdrm', 'police', 'ccid', 'lhdn', 'kwsp', 'epf', 'kastam', 'mahkamah'];
-const CREDENTIAL_TERMS = ['otp', 'tac', 'pin', 'password', 'secure code', 'verification code'];
+const CREDENTIAL_TERMS = ['otp', 'tac', 'pin', 'password', 'secure code', 'verification code', 'kyc'];
 const MONEY_TERMS = ['pay now', 'transfer', 'safe account', 'top up', 'processing fee', 'release fee', 'deposit'];
 const MALAYSIA_BRANDS = ['maybank', 'cimb', 'public bank', 'rhb', 'bsn', 'touch n go', 'tng', 'kwsp', 'epf', 'pos malaysia', 'j&t', 'tenaga'];
 const IMAGE_HINT_TERMS = ['screenshot', 'wallet', 'otp', 'parcel', 'kwsp', 'bank'];
@@ -50,10 +50,11 @@ function extractPhoneCandidate(value = '') {
 export function normalizeIncomingInput({ kind, content = '', notes = '', languageHint, file }) {
   const detectedKind = detectInputKind({ kind, content, file });
   const combinedText = normalizeWhitespace([content, notes, file?.originalname].filter(Boolean).join(' '));
+  const signalSource = normalizeWhitespace([content, notes].filter(Boolean).join(' '));
   const tokens = tokenizeText(combinedText);
   const extractedIndicators = [];
-  const urlCandidate = detectedKind === 'url' ? content : extractUrlCandidate(combinedText);
-  const phoneCandidate = detectedKind === 'phone' ? content : extractPhoneCandidate(combinedText);
+  const urlCandidate = detectedKind === 'url' ? content : extractUrlCandidate(signalSource);
+  const phoneCandidate = detectedKind === 'phone' ? content : extractPhoneCandidate(signalSource);
 
   const normalizedInput = {
     detectedKind,

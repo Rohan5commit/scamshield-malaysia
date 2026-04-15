@@ -1,5 +1,5 @@
 const REDACTION_PATTERNS = [
-  { label: 'phone', regex: /\b(?:\+?6?0\d[\d -]{7,12}\d)\b/g, replacement: '[redacted-phone]' },
+  { label: 'phone', regex: /(?:\+?6?0\d[\d -]{7,12}\d)/g, replacement: '[redacted-phone]' },
   { label: 'email', regex: /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi, replacement: '[redacted-email]' },
   { label: 'url', regex: /\bhttps?:\/\/[^\s]+/gi, replacement: '[redacted-url]' }
 ];
@@ -33,4 +33,3 @@ export function sanitizeCommunityText(text) {
     blockedMatches: Array.from(new Set(blockedMatches))
   };
 }
-
