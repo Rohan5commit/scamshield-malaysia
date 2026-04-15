@@ -1,0 +1,15 @@
+node_modules
+dist
+coverage
+.DS_Store
+.env
+.env.local
+.env.*.local
+backend/data/community_reports.json
+backend/data/community_reports.backup.json
+backend/tmp
+frontend/.vite
+frontend/dist
+npm-debug.log*
+*.log
+

@@ -1,0 +1,14 @@
+{
+  "name": "@scamshield-malaysia/backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node --watch src/server.js",
+    "start": "node src/server.js",
+    "build": "echo \"backend build pending\"",
+    "lint": "echo \"backend lint pending\"",
+    "test": "echo \"backend test pending\""
+  }
+}
+

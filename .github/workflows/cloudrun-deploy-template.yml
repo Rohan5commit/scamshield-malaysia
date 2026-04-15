@@ -1,0 +1,11 @@
+name: Cloud Run Deploy Template
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "Configure GCP secrets and replace this placeholder deployment workflow."
+
