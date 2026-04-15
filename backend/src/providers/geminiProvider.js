@@ -7,6 +7,7 @@ import { buildMessagePrompt } from '../prompts/scam-message-analysis.v1.js';
 import { buildPhonePrompt } from '../prompts/phone-risk-analysis.v1.js';
 import { buildScreenshotPrompt } from '../prompts/screenshot-analysis.v1.js';
 import { buildUrlPrompt } from '../prompts/phishing-url-analysis.v1.js';
+import { coerceCommunityNormalization, coerceProviderAnalysis } from './providerOutputUtils.js';
 
 function sleep(ms) {
   return new Promise((resolve) => {
@@ -35,7 +36,11 @@ function extractOutput(response) {
     return response.output;
   }
 
-  return JSON.parse(response.text);
+  try {
+    return JSON.parse(response.text);
+  } catch {
+    return null;
+  }
 }
 
 function isRetryableGeminiError(error) {
@@ -70,7 +75,7 @@ export class GeminiProvider {
       model: defaultGoogleModel,
       system: `${prompt.system}\n\n${buildExplanationInstruction()}`,
       prompt: prompt.prompt,
-      output: { schema: ProviderAnalysisSchema }
+      output: { schema: ProviderAnalysisSchema, constrained: true }
     };
 
     if (context.normalizedInput.file?.bufferBase64) {
@@ -86,7 +91,11 @@ export class GeminiProvider {
 
     try {
       const response = await withRetry(() => ai.generate(request));
-      return ProviderAnalysisSchema.parse(extractOutput(response));
+      return coerceProviderAnalysis({
+        payload: extractOutput(response),
+        responseText: response.text,
+        context
+      });
     } catch (error) {
       if (isRetryableGeminiError(error)) {
         const wrapped = new Error('Gemini is currently under heavy demand. Retry in a moment or switch to mock mode for demo reliability.');
@@ -106,11 +115,16 @@ export class GeminiProvider {
           model: defaultGoogleModel,
           system: prompt.system,
           prompt: prompt.prompt,
-          output: { schema: CommunityNormalizationSchema }
+          output: { schema: CommunityNormalizationSchema, constrained: true }
         })
       );
 
-      return CommunityNormalizationSchema.parse(extractOutput(response));
+      return coerceCommunityNormalization({
+        payload: extractOutput(response),
+        responseText: response.text,
+        submission,
+        sanitizedText
+      });
     } catch (error) {
       if (isRetryableGeminiError(error)) {
         const wrapped = new Error('Gemini is currently under heavy demand. Retry in a moment or switch to mock mode for demo reliability.');
