@@ -8,6 +8,12 @@ import { buildPhonePrompt } from '../prompts/phone-risk-analysis.v1.js';
 import { buildScreenshotPrompt } from '../prompts/screenshot-analysis.v1.js';
 import { buildUrlPrompt } from '../prompts/phishing-url-analysis.v1.js';
 
+function sleep(ms) {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
+
 function promptForInput(context) {
   if (context.normalizedInput.detectedKind === 'url') {
     return buildUrlPrompt(context);
@@ -32,6 +38,31 @@ function extractOutput(response) {
   return JSON.parse(response.text);
 }
 
+function isRetryableGeminiError(error) {
+  const message = String(error?.message ?? '');
+  return error?.code === 429 || error?.code === 500 || error?.code === 503 || /UNAVAILABLE|high demand|RESOURCE_EXHAUSTED/i.test(message);
+}
+
+async function withRetry(operation, attempts = 3) {
+  let lastError;
+
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+
+      if (!isRetryableGeminiError(error) || attempt === attempts - 1) {
+        throw error;
+      }
+
+      await sleep(600 * 2 ** attempt);
+    }
+  }
+
+  throw lastError;
+}
+
 export class GeminiProvider {
   async analyzeThreat(context) {
     const prompt = promptForInput(context);
@@ -53,20 +84,41 @@ export class GeminiProvider {
       ];
     }
 
-    const response = await ai.generate(request);
-    return ProviderAnalysisSchema.parse(extractOutput(response));
+    try {
+      const response = await withRetry(() => ai.generate(request));
+      return ProviderAnalysisSchema.parse(extractOutput(response));
+    } catch (error) {
+      if (isRetryableGeminiError(error)) {
+        const wrapped = new Error('Gemini is currently under heavy demand. Retry in a moment or switch to mock mode for demo reliability.');
+        wrapped.statusCode = 503;
+        throw wrapped;
+      }
+
+      throw error;
+    }
   }
 
   async normalizeCommunityReport({ submission, sanitizedText }) {
     const prompt = buildCommunityPrompt({ submission, sanitizedText });
-    const response = await ai.generate({
-      model: defaultGoogleModel,
-      system: prompt.system,
-      prompt: prompt.prompt,
-      output: { schema: CommunityNormalizationSchema }
-    });
+    try {
+      const response = await withRetry(() =>
+        ai.generate({
+          model: defaultGoogleModel,
+          system: prompt.system,
+          prompt: prompt.prompt,
+          output: { schema: CommunityNormalizationSchema }
+        })
+      );
 
-    return CommunityNormalizationSchema.parse(extractOutput(response));
+      return CommunityNormalizationSchema.parse(extractOutput(response));
+    } catch (error) {
+      if (isRetryableGeminiError(error)) {
+        const wrapped = new Error('Gemini is currently under heavy demand. Retry in a moment or switch to mock mode for demo reliability.');
+        wrapped.statusCode = 503;
+        throw wrapped;
+      }
+
+      throw error;
+    }
   }
 }
-

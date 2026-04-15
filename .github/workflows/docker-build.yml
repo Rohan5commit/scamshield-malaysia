@@ -1,0 +1,53 @@
+name: Docker Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  docker-build-and-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t scamshield-malaysia:test .
+
+      - name: Start container in mock mode
+        run: |
+          docker run -d --name scamshield-malaysia \
+            -p 8080:8080 \
+            -e MOCK_AI=true \
+            -e NODE_ENV=production \
+            scamshield-malaysia:test
+
+      - name: Wait for health endpoint
+        run: |
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8080/api/health >/tmp/health.json; then
+              cat /tmp/health.json
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "Container failed to become healthy in time."
+          docker logs scamshield-malaysia
+          exit 1
+
+      - name: Smoke test analysis endpoint
+        run: |
+          curl -fsS -X POST http://127.0.0.1:8080/api/analyze \
+            -H 'Content-Type: application/json' \
+            -d '{"content":"POS MALAYSIA parcel held by Kastam. Pay RM2.99 immediately to release package: http://postmy-track.cc/claim"}' \
+            > /tmp/analyze.json
+          cat /tmp/analyze.json
+          grep -q '"ok":true' /tmp/analyze.json
+
+      - name: Stop container
+        if: always()
+        run: |
+          docker logs scamshield-malaysia || true
+          docker rm -f scamshield-malaysia || true

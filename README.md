@@ -229,6 +229,15 @@ Runs on pushes and pull requests and performs:
 - `npm run test`
 - `npm run build`
 
+### `docker-build.yml`
+
+Runs entirely on GitHub Actions hosted runners and performs:
+
+- `docker build`
+- container startup in mock mode
+- `/api/health` smoke check
+- `/api/analyze` smoke check
+
 ### `cloudrun-deploy-template.yml`
 
 A manual `workflow_dispatch` template that becomes active once GitHub secrets are added for:
@@ -240,6 +249,8 @@ A manual `workflow_dispatch` template that becomes active once GitHub secrets ar
 - Cloud Run service name
 
 It is intentionally safe to keep in the repo before credentials exist.
+
+The repository secret `GEMINI_API_KEY` can be stored in GitHub Actions for future workflow use without exposing it in this public repository.
 
 ## AI Usage Disclosure
 
@@ -284,4 +295,3 @@ ScamShield Malaysia is positioned as a scalable trust-and-safety layer for:
 ## License
 
 MIT
-
