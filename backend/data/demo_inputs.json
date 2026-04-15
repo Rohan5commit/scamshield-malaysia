@@ -1,0 +1,27 @@
+[
+  {
+    "id": "demo-text-parcel",
+    "label": "Parcel fee SMS",
+    "kind": "text",
+    "content": "POS MALAYSIA: Parcel held by Kastam. Pay RM2.99 immediately to release package: http://postmy-track.cc/claim"
+  },
+  {
+    "id": "demo-url-bank",
+    "label": "Fake bank URL",
+    "kind": "url",
+    "content": "https://maybank-alert-secure.com/login/verify"
+  },
+  {
+    "id": "demo-phone-macau",
+    "label": "Suspicious caller number",
+    "kind": "phone",
+    "content": "+603-4022-7711"
+  },
+  {
+    "id": "demo-image-wallet",
+    "label": "Wallet screenshot",
+    "kind": "image",
+    "content": "Touch 'n Go eWallet suspended, verify now"
+  }
+]
+

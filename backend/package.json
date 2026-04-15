@@ -6,9 +6,31 @@
   "scripts": {
     "dev": "node --watch src/server.js",
     "start": "node src/server.js",
-    "build": "echo \"backend build pending\"",
-    "lint": "echo \"backend lint pending\"",
-    "test": "echo \"backend test pending\""
+    "build": "esbuild src/server.js --bundle --platform=node --format=esm --packages=external --outfile=dist/server.js",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@genkit-ai/google-genai": "^1.32.0",
+    "@google-cloud/firestore": "^7.11.6",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "express-rate-limit": "^8.3.2",
+    "genkit": "^1.32.0",
+    "helmet": "^8.1.0",
+    "libphonenumber-js": "^1.12.41",
+    "multer": "^2.1.1",
+    "pino": "^10.3.1",
+    "pino-http": "^11.0.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "esbuild": "^0.28.0",
+    "eslint": "^10.2.0",
+    "globals": "^17.5.0",
+    "supertest": "^7.2.2",
+    "vitest": "^4.1.4"
   }
 }
-
