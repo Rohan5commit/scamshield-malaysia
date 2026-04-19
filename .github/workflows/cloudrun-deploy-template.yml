@@ -90,6 +90,14 @@ jobs:
           source: .
           flags: >-
             --allow-unauthenticated
-            --set-env-vars=NODE_ENV=production,PORT=8080,MOCK_AI=${{ steps.check.outputs.mock_ai }},STORAGE_PROVIDER=${{ steps.check.outputs.storage_provider }},FIRESTORE_PROJECT_ID=${{ env.FIRESTORE_PROJECT_ID }}
           env_vars: |
+            NODE_ENV=production
+            MOCK_AI=${{ steps.check.outputs.mock_ai }}
+            DEFAULT_MODEL=gemini-2.5-flash-lite
+            STORAGE_PROVIDER=${{ steps.check.outputs.storage_provider }}
+            FIRESTORE_PROJECT_ID=${{ env.FIRESTORE_PROJECT_ID }}
+            FIRESTORE_COLLECTION=scamshield_reports
+            LOG_LEVEL=info
+            RATE_LIMIT_WINDOW_MS=60000
+            RATE_LIMIT_MAX=60
             GEMINI_API_KEY=${{ env.GEMINI_API_KEY }}
