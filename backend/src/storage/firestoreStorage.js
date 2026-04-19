@@ -13,11 +13,11 @@ export class FirestoreStorage {
   }
 
   async ensureReady() {
-    return true;
+    await this.client.collection(this.collectionName).limit(1).get();
   }
 
-  async listUserReports() {
-    const snapshot = await this.client.collection(this.collectionName).orderBy('reportedAt', 'desc').limit(100).get();
+  async listUserReports(limit = 25) {
+    const snapshot = await this.client.collection(this.collectionName).orderBy('reportedAt', 'desc').limit(limit).get();
     return snapshot.docs.map((doc) => doc.data());
   }
 
@@ -27,7 +27,7 @@ export class FirestoreStorage {
   }
 
   async getStats() {
-    return { storedReports: 'firestore', mode: 'firestore' };
+    const snapshot = await this.client.collection(this.collectionName).limit(1).get();
+    return { storedReports: snapshot.size, mode: 'firestore', probe: 'ok' };
   }
 }
-

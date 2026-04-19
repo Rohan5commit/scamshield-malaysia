@@ -24,7 +24,7 @@ export const httpLogger = pinoHttp({
       return {
         method: request.method,
         url: request.url,
-        remoteAddress: request.remoteAddress,
+        remoteAddress: request.ip ?? request.remoteAddress,
         requestId: request.id
       };
     },
@@ -35,4 +35,3 @@ export const httpLogger = pinoHttp({
     }
   }
 });
-

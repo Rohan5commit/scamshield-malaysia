@@ -33,3 +33,35 @@ export function sanitizeCommunityText(text) {
     blockedMatches: Array.from(new Set(blockedMatches))
   };
 }
+
+export function sanitizeCommunitySubmission(submission) {
+  const sanitizedSubmission = { ...submission };
+  const piiRedactions = [];
+  const blockedMatches = [];
+
+  for (const field of ['title', 'description', 'category', 'locationHint']) {
+    if (!sanitizedSubmission[field]) {
+      continue;
+    }
+
+    const sanitized = sanitizeCommunityText(sanitizedSubmission[field]);
+    sanitizedSubmission[field] = sanitized.sanitizedText.trim() || undefined;
+    piiRedactions.push(...sanitized.piiRedactions);
+    blockedMatches.push(...sanitized.blockedMatches);
+  }
+
+  sanitizedSubmission.tags = (sanitizedSubmission.tags ?? [])
+    .map((tag) => sanitizeCommunityText(tag))
+    .map((result) => {
+      piiRedactions.push(...result.piiRedactions);
+      blockedMatches.push(...result.blockedMatches);
+      return result.sanitizedText.trim();
+    })
+    .filter(Boolean);
+
+  return {
+    submission: sanitizedSubmission,
+    piiRedactions: Array.from(new Set(piiRedactions)),
+    blockedMatches: Array.from(new Set(blockedMatches))
+  };
+}

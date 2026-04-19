@@ -35,7 +35,12 @@ const EnvSchema = z.object({
   FIRESTORE_KEY_JSON: z.string().optional(),
   MAX_UPLOAD_MB: z.coerce.number().positive().default(5),
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
-  RATE_LIMIT_MAX: z.coerce.number().int().positive().default(60)
+  RATE_LIMIT_MAX: z.coerce.number().int().positive().default(60),
+  ANALYZE_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(8),
+  REPORTS_READ_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(30),
+  REPORTS_WRITE_RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(900_000),
+  REPORTS_WRITE_RATE_LIMIT_MAX: z.coerce.number().int().positive().default(5),
+  RETRIEVAL_USER_REPORT_LIMIT: z.coerce.number().int().positive().default(15)
 });
 
 const parsed = EnvSchema.parse(process.env);
@@ -54,4 +59,3 @@ export const env = {
   maxUploadBytes: parsed.MAX_UPLOAD_MB * 1024 * 1024,
   hasGeminiKey: Boolean(parsed.GEMINI_API_KEY && parsed.GEMINI_API_KEY.trim())
 };
-

@@ -91,7 +91,7 @@ export async function runRetrievalAgent({ normalizedInput, storage }) {
   const [patterns, seededReports, userReports] = await Promise.all([
     getSeedPatterns(),
     getCommunitySeedReports(),
-    storage.listUserReports()
+    storage.listUserReports(env.RETRIEVAL_USER_REPORT_LIMIT)
   ]);
 
   const seedMatches = patterns
@@ -113,4 +113,3 @@ export async function runRetrievalAgent({ normalizedInput, storage }) {
     community: communityMatches
   };
 }
-

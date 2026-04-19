@@ -3,15 +3,16 @@ import { Router } from 'express';
 import { normalizeCommunityReportFlow } from '../flows/normalizeCommunityReportFlow.js';
 import { getCommunitySeedReports } from '../services/retrievalAgent.js';
 import { getStorage } from '../storage/storageFactory.js';
+import { reportsReadLimiter, reportsWriteLimiter } from '../utils/rateLimit.js';
 
 const router = Router();
 
-router.get('/', async (request, response, next) => {
+router.get('/', reportsReadLimiter, async (request, response, next) => {
   try {
     const query = (request.query.q ?? '').toString().trim().toLowerCase();
     const limit = Math.max(1, Math.min(50, Number(request.query.limit ?? 20)));
     const storage = await getStorage();
-    const [seededReports, userReports] = await Promise.all([getCommunitySeedReports(), storage.listUserReports()]);
+    const [seededReports, userReports] = await Promise.all([getCommunitySeedReports(), storage.listUserReports(limit)]);
     const reports = [...userReports, ...seededReports]
       .filter((report) => {
         if (!query) {
@@ -30,7 +31,7 @@ router.get('/', async (request, response, next) => {
   }
 });
 
-router.post('/', async (request, response, next) => {
+router.post('/', reportsWriteLimiter, async (request, response, next) => {
   try {
     const normalizedReport = await normalizeCommunityReportFlow(request.body);
     const storage = await getStorage();
@@ -42,4 +43,3 @@ router.post('/', async (request, response, next) => {
 });
 
 export default router;
-

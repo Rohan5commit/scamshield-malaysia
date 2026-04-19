@@ -7,6 +7,20 @@ function uniqueList(values) {
   return Array.from(new Set(values.filter(Boolean)));
 }
 
+function buildSafeInput(normalizedInput) {
+  if (!normalizedInput.file?.bufferBase64) {
+    return normalizedInput;
+  }
+
+  return {
+    ...normalizedInput,
+    file: {
+      ...normalizedInput.file,
+      bufferBase64: undefined
+    }
+  };
+}
+
 export function runReportGenerator({ normalizedInput, heuristics, retrieval, providerAnalysis, scoring }) {
   const redFlags = uniqueList([...providerAnalysis.redFlags, ...heuristics.redFlags]).slice(0, 6);
   const recommendedActions = uniqueList(providerAnalysis.recommendedActions).slice(0, 5);
@@ -22,7 +36,7 @@ export function runReportGenerator({ normalizedInput, heuristics, retrieval, pro
     requestId: randomUUID(),
     analyzedAt: new Date().toISOString(),
     providerMode: getProviderMode(),
-    input: normalizedInput,
+    input: buildSafeInput(normalizedInput),
     verdict: providerAnalysis.verdict,
     riskLevel: scoring.riskLevel,
     riskScore: scoring.riskScore,
@@ -44,4 +58,3 @@ export function runReportGenerator({ normalizedInput, heuristics, retrieval, pro
     scoreExplanation
   });
 }
-

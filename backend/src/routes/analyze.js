@@ -3,6 +3,7 @@ import { Router } from 'express';
 
 import { env } from '../config.js';
 import { analyzeScamFlow } from '../flows/analyzeScamFlow.js';
+import { analyzeLimiter } from '../utils/rateLimit.js';
 
 const router = Router();
 
@@ -28,7 +29,7 @@ function maybeHandleMultipart(request, response, next) {
   next();
 }
 
-router.post('/', maybeHandleMultipart, async (request, response, next) => {
+router.post('/', analyzeLimiter, maybeHandleMultipart, async (request, response, next) => {
   try {
     const result = await analyzeScamFlow({
       kind: request.body.kind,
@@ -52,4 +53,3 @@ router.post('/', maybeHandleMultipart, async (request, response, next) => {
 });
 
 export default router;
-

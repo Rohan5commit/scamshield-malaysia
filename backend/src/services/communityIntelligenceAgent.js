@@ -3,11 +3,11 @@ import { randomUUID } from 'node:crypto';
 import { getAiProvider } from '../providers/aiProvider.js';
 import { CommunityNormalizationSchema, NormalizedCommunityReportSchema, ReportSubmissionSchema } from '../schemas/report.js';
 import { sha256 } from '../utils/hash.js';
-import { sanitizeCommunityText } from '../utils/pii.js';
+import { sanitizeCommunitySubmission } from '../utils/pii.js';
 
 export async function runCommunityIntelligenceAgent(payload) {
   const submission = ReportSubmissionSchema.parse(payload);
-  const sanitized = sanitizeCommunityText(submission.description);
+  const sanitized = sanitizeCommunitySubmission(submission);
 
   if (sanitized.blockedMatches.length > 0) {
     const error = new Error(`Please remove sensitive identifiers before submitting: ${sanitized.blockedMatches.join(', ')}.`);
@@ -18,8 +18,8 @@ export async function runCommunityIntelligenceAgent(payload) {
   const provider = getAiProvider();
   const normalized = CommunityNormalizationSchema.parse(
     await provider.normalizeCommunityReport({
-      submission,
-      sanitizedText: sanitized.sanitizedText
+      submission: sanitized.submission,
+      sanitizedText: sanitized.submission.description
     })
   );
 
@@ -32,4 +32,3 @@ export async function runCommunityIntelligenceAgent(payload) {
     piiRedactions: Array.from(new Set([...normalized.piiRedactions, ...sanitized.piiRedactions]))
   });
 }
-

@@ -30,9 +30,10 @@ export class LocalJsonStorage {
     }
   }
 
-  async listUserReports() {
+  async listUserReports(limit) {
     await this.ensureReady();
-    return readJson(this.filePath, []);
+    const reports = await readJson(this.filePath, []);
+    return typeof limit === 'number' ? reports.slice(0, limit) : reports;
   }
 
   async saveReport(report) {
@@ -47,4 +48,3 @@ export class LocalJsonStorage {
     return { storedReports: reports.length, mode: 'local' };
   }
 }
-

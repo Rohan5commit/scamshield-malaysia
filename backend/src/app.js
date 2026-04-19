@@ -3,7 +3,6 @@ import fs from 'node:fs/promises';
 
 import cors from 'cors';
 import express from 'express';
-import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { ZodError } from 'zod';
 
@@ -13,11 +12,13 @@ import healthRouter from './routes/health.js';
 import reportsRouter from './routes/reports.js';
 import samplesRouter from './routes/samples.js';
 import { httpLogger, logger } from './utils/logger.js';
+import { apiLimiter } from './utils/rateLimit.js';
 
 const frontendIndex = path.join(env.frontendDistDir, 'index.html');
 
 export function createApp() {
   const app = express();
+  app.set('trust proxy', env.NODE_ENV === 'production' ? 1 : false);
 
   app.use(helmet({ crossOriginResourcePolicy: false }));
   app.use(
@@ -29,17 +30,9 @@ export function createApp() {
   app.use(httpLogger);
   app.use(express.json({ limit: '1mb' }));
   app.use(express.urlencoded({ extended: true }));
-  app.use(
-    '/api',
-    rateLimit({
-      windowMs: env.RATE_LIMIT_WINDOW_MS,
-      limit: env.RATE_LIMIT_MAX,
-      standardHeaders: 'draft-8',
-      legacyHeaders: false
-    })
-  );
 
   app.use('/api/health', healthRouter);
+  app.use('/api', apiLimiter);
   app.use('/api/analyze', analyzeRouter);
   app.use('/api/reports', reportsRouter);
   app.use('/api/samples', samplesRouter);

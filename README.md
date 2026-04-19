@@ -181,6 +181,11 @@ The app will still:
 | `MAX_UPLOAD_MB` | No | Upload limit for image analysis |
 | `RATE_LIMIT_WINDOW_MS` | No | Express rate-limit window |
 | `RATE_LIMIT_MAX` | No | Express rate-limit cap per window |
+| `ANALYZE_RATE_LIMIT_MAX` | No | Stricter per-IP limit for `/api/analyze` |
+| `REPORTS_READ_RATE_LIMIT_MAX` | No | Per-IP limit for community report search |
+| `REPORTS_WRITE_RATE_LIMIT_WINDOW_MS` | No | Write window for community submissions |
+| `REPORTS_WRITE_RATE_LIMIT_MAX` | No | Per-IP cap for community submissions |
+| `RETRIEVAL_USER_REPORT_LIMIT` | No | Max user reports loaded during similarity retrieval |
 | `VITE_API_BASE_URL` | No | Optional frontend override for API base URL |
 
 ## API Summary
@@ -272,6 +277,8 @@ AI coding tools were used during development. All code has been reviewed and can
 - Phone numbers, emails, and URLs are redacted from user-submitted reports
 - NRIC-like and bank-account-like identifiers are rejected from report submission
 - The backend uses rate limiting, upload limits, and structured validation on every route
+- Cloud Run uses proxy-aware IP throttling so forwarded client addresses are handled correctly
+- Uploaded screenshot bytes are used for analysis only and are not echoed back in API responses
 - Secrets are environment-variable only and are never hardcoded
 
 ## Demo Walkthrough

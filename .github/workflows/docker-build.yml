@@ -10,8 +10,10 @@ on:
 jobs:
   docker-build-and-smoke:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
 
       - name: Build Docker image
         run: docker build -t scamshield-malaysia:test .
